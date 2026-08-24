@@ -14,18 +14,28 @@ body {
   padding: 1rem;
 }
 
-.form-signin .form-floating:focus-within {
+/* 입력칸을 한 덩어리로 붙여서 보여주는 묶음. 칸 개수와 무관하게 동작한다. */
+.form-stack {
+  margin-bottom: 1rem;
+}
+
+.form-stack .form-floating:focus-within {
   z-index: 2;
 }
 
-.form-signin input[type="text"] {
+/* 기본은 모두 각지게 + 1px씩 겹쳐서 테두리가 두 줄로 보이지 않게 */
+.form-stack .form-control {
   margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
+  border-radius: 0;
 }
 
-.form-signin input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+.form-stack .form-floating:first-child .form-control {
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+}
+
+.form-stack .form-floating:last-child .form-control {
+  margin-bottom: 0;
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
 }
