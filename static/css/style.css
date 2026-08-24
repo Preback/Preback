@@ -1,0 +1,5 @@
+:root {
+  --bs-font-sans-serif: "Pretendard Variable", Pretendard,
+                        system-ui, -apple-system, sans-serif;
+}
+/* TO-DO: 추후 모든 페이지에 Pretendard 적용, base.html로 한번에 얾겨서 모든 페이지에서 상속 */
