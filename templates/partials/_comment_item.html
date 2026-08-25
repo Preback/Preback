@@ -1,0 +1,13 @@
+{# 댓글 한 건 — viewer.html 댓글 패널에서 사용
+   사용법: {% import "partials/_comment_item.html" as comment %}
+           {{ comment.comment_item(c) }} #}
+
+{% macro comment_item(c) -%}
+<div class="comment mb-3">
+    <div class="d-flex align-items-baseline gap-2">
+        <span class="comment__author text-truncate">{{ c.author }}</span>
+        <span class="comment__time flex-shrink-0">{{ c.created_at|timeago }}</span>
+    </div>
+    <p class="comment__body mb-0 mt-1">{{ c.body }}</p>
+</div>
+{%- endmacro %}
