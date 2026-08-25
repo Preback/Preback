@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+
+    <title>{% block title %}Preback{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style type="text/css">
+        body {
+
+            display: flex;
+            min-height: 100vw;
+        }
+
+        .baseHtml {
+            display: flex;
+        }
+
+        header {
+            display: flex;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="baseHtml">
+        <aside class="bg-dark-subtle text-white p-3" style="width: 240px;">
+            <div class="m-3">
+                PreBack
+            </div>
+
+            <div class="buttons">
+                <a href="내p" class="btn p-2" role="button">내 프레젠테이션</a>
+                <a href="전체p" class="btn p-2" role="button">전체 프레젠테이션</a>
+            </div>
+
+        </aside>
+        <div class="right-side-contents">
+            <header>
+                <div>
+                    {% block header_title %} {% endblock %}
+                </div>
+                <input type="text" class="form-control"  />
+                <a href="/upload" class="btn" role="button">업로드</a>
+            </header>
+            <main>
+            {% block content %}
+            <p>기본 콘텐츠 영역입니다.</p>
+            {% endblock %}
+            </main>
+        </div>
+        
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
