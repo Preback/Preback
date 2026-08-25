@@ -22,7 +22,8 @@ class UserDB(BaseModel):
 class PresentationDB(BaseModel): 
     model_config = ConfigDict(arbitrary_types_allowed=True)
     id: ObjectId = Field(alias="_id")
-    
+
+    title: str
     user_oid: ObjectId
     slides_oid: list[ObjectId]
     status : PresentationStatus = PresentationStatus.WAITING
@@ -35,10 +36,15 @@ class SlideDB(BaseModel):
     img_src: str
     replies: list[ObjectId]
 
+
 class CommentDB(BaseModel):
+    
+    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
     reply: str
     user_oid : ObjectId
+    slide_oid: ObjectId
     created_at: datetime = Field(
     default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul"))
+   
 )
 
