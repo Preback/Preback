@@ -1,10 +1,14 @@
 import os
+import uuid
 from datetime import date, datetime, timedelta
+from pymongo import MongoClient
 
-from flask import Flask, abort, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, url_for, session
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+client = MongoClient('localhost', 27017)
+db = client.dbpreback
 
 # TODO: config.py로 옮기기
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -70,6 +74,7 @@ def getUpload():
 @app.route('/upload', methods=['POST'])
 def postUpload():
     file = request.files.get('file')
+
     if file is None or not file.filename:
         return render_template('upload.html', error='파일을 선택해주세요.'), 400
 
@@ -77,7 +82,18 @@ def postUpload():
         return render_template('upload.html', error='.pdf 파일만 업로드할 수 있습니다.'), 400
 
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    file.save(os.path.join(UPLOAD_FOLDER, secure_filename(file.filename)))
+
+    presentation_id = uuid.uuid4().hex
+    file.save(os.path.join(UPLOAD_FOLDER, secure_filename(presentation_id)))
+
+    title = request.form.get('title', '').strip()
+    user_oid = session.get('user_oid')
+    if not user_oid:
+        return redirect(url_for(getLogin))
+    db.presentations.insert_one({
+        'title' : title,
+        'user_oid' : user_oid,
+    })
 
     # TODO: services/converter.py로 슬라이드 이미지 변환 + db/repository.py에 메타데이터 저장
     # TODO: 저장 후 상세 뷰어로 리다이렉트 ("첨부하고 열기")
