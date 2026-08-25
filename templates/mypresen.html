@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>내 프리젠테이션</title>
+        <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link rel="stylesheet" href="../static/css/style.css">
+        <link rel="stylesheet" href="../static/css/presentation.css">
+    </head>
+
+    <body>
+        <main class="p-4">
+            <div class="d-flex flex-wrap gap-3">
+
+                <!-- 새 PPT 업로드 -->
+                <a class="card presen-card presen-card--upload flex-column align-items-center justify-content-center gap-2 text-decoration-none" href="/upload">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>새 PPT 업로드</span>
+                </a>
+
+                <!--
+                    TO-DO: 백엔드 연결 시 아래 카드 5개를 지우고 이 루프로 교체
+                    presentations = [{ id, title, thumbnail, slide_count, comment_count, updated_at }, ...]
+
+                    {% for p in presentations %}
+                        ...카드 1개 마크업 (아래 구조 그대로)...
+                    {% endfor %}
+
+                    바인딩 지점: href="{{ url_for('presentation.viewer', presentation_id=p.id) }}"
+                                 제목       {{ p.title }}
+                                 슬라이드 수 {{ p.slide_count }}
+                                 댓글 수     {{ p.comment_count }}
+                                 수정일      {{ p.updated_at.strftime('%-m월 %-d일') }}
+                                 썸네일      {{ url_for('static', filename='slides/' ~ p.thumbnail) }}
+                -->
+
+                <article class="card presen-card overflow-hidden">
+                    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none" href="/presentations/1">
+                        <!-- TO-DO: 썸네일 생성(services/converter.py) 후 <img src="..." alt="">로 교체 -->
+                        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+                    </a>
+                    <div class="presen-body">
+                        <div class="d-flex align-items-center gap-1">
+                            <a class="presen-title flex-grow-1 text-truncate text-decoration-none" href="/presentations/1">2026 사업계획 발표</a>
+                        </div>
+                        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+                            <span class="d-flex align-items-center gap-2">
+                                <span>24 슬라이드</span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <!-- TO-DO: jinja2 연결후 아이콘 별도로 partials로 빼고 for 루프화 -->
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    12
+                                </span>
+                            </span>
+                            <time datetime="2026-08-20">8월 20일</time>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card presen-card overflow-hidden">
+                    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none" href="/presentations/2">
+                        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+                    </a>
+                    <div class="presen-body">
+                        <div class="d-flex align-items-center gap-1">
+                            <a class="presen-title flex-grow-1 text-truncate text-decoration-none" href="/presentations/2">제품 디자인 리뷰</a>
+                        </div>
+                        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+                            <span class="d-flex align-items-center gap-2">
+                                <span>18 슬라이드</span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    5
+                                </span>
+                            </span>
+                            <time datetime="2026-08-18">8월 18일</time>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card presen-card overflow-hidden">
+                    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none" href="/presentations/3">
+                        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+                    </a>
+                    <div class="presen-body">
+                        <div class="d-flex align-items-center gap-1">
+                            <a class="presen-title flex-grow-1 text-truncate text-decoration-none" href="/presentations/3">마케팅 캠페인 제안서</a>
+                        </div>
+                        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+                            <span class="d-flex align-items-center gap-2">
+                                <span>32 슬라이드</span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    27
+                                </span>
+                            </span>
+                            <time datetime="2026-08-15">8월 15일</time>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card presen-card overflow-hidden">
+                    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none" href="/presentations/4">
+                        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+                    </a>
+                    <div class="presen-body">
+                        <div class="d-flex align-items-center gap-1">
+                            <a class="presen-title flex-grow-1 text-truncate text-decoration-none" href="/presentations/4">분기 실적 보고</a>
+                        </div>
+                        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+                            <span class="d-flex align-items-center gap-2">
+                                <span>14 슬라이드</span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    0
+                                </span>
+                            </span>
+                            <time datetime="2026-08-10">8월 10일</time>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card presen-card overflow-hidden">
+                    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none" href="/presentations/5">
+                        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+                    </a>
+                    <div class="presen-body">
+                        <div class="d-flex align-items-center gap-1">
+                            <a class="presen-title flex-grow-1 text-truncate text-decoration-none" href="/presentations/5">신규 기능 킥오프</a>
+                        </div>
+                        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+                            <span class="d-flex align-items-center gap-2">
+                                <span>9 슬라이드</span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    3
+                                </span>
+                            </span>
+                            <time datetime="2026-08-05">8월 5일</time>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </main>
+    </body>
+</html>
