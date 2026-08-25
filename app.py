@@ -1,14 +1,12 @@
 import os
 import uuid
+from db.repository import CreatePresentation
 from datetime import date, datetime, timedelta
-from pymongo import MongoClient
 
 from flask import Flask, abort, redirect, render_template, request, url_for, session
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-client = MongoClient('localhost', 27017)
-db = client.dbpreback
 
 # TODO: config.py로 옮기기
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -73,8 +71,14 @@ def getUpload():
 
 @app.route('/upload', methods=['POST'])
 def postUpload():
-    file = request.files.get('file')
+    user_oid = session.get('user_oid')
+    title = request.form.get('title', '').strip()
+    if not user_oid:
+        return redirect(url_for('getLogin'))
+    if not title:
+        return render_template('upload.html', error='제목을 입력해주세요.'), 400
 
+    file = request.files.get('file')
     if file is None or not file.filename:
         return render_template('upload.html', error='파일을 선택해주세요.'), 400
 
@@ -83,21 +87,21 @@ def postUpload():
 
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-    presentation_id = uuid.uuid4().hex
-    file.save(os.path.join(UPLOAD_FOLDER, secure_filename(presentation_id)))
+    file_id = uuid.uuid4().hex + '.pdf'
+    save_path = os.path.join(UPLOAD_FOLDER, secure_filename(file_id))
+    file.save(save_path)
 
-    title = request.form.get('title', '').strip()
-    user_oid = session.get('user_oid')
-    if not user_oid:
-        return redirect(url_for(getLogin))
-    db.presentations.insert_one({
-        'title' : title,
-        'user_oid' : user_oid,
-    })
+    try:
+        presentation_id = createPresentation(title, user_oid, file_id)
+    except Exception:
+        os.remove(save_path)
+        app.logger.exception('presentation insert 실패')
+        return render_template('upload.html', error='업로드 중 오류가 발생했습니다. 다시 시도해주세요.'), 500
 
+    # 두 저장소에 걸친 쓰기의 원자성 문제 : createPresentation이 예외를 내면 디스크에 고아 파일이 남고 반대 순서면 DB에 고아 문서가 남는다.(try/except로 처리 가능)
     # TODO: services/converter.py로 슬라이드 이미지 변환 + db/repository.py에 메타데이터 저장
     # TODO: 저장 후 상세 뷰어로 리다이렉트 ("첨부하고 열기")
-    return redirect(url_for('getMyPresentations'))
+    return redirect(url_for('getPresentation', presentation_id=presentation_id))
 
 @app.route('/login')
 def getLogin():
@@ -120,7 +124,7 @@ def getMyPresentations():
 def getAllPresentations():
     return render_template('all_presentations.html', presentations=DUMMY_ALL_PRESENTATIONS, active='all')
 
-@app.route('/presentations/<int:presentation_id>')
+@app.route('/presentations/<presentation_id>')
 def getPresentation(presentation_id):
     presentation = find_presentation(presentation_id)
     if presentation is None:
