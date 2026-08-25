@@ -21,12 +21,14 @@ class UserDB(BaseModel):
 
 class PresentationDB(BaseModel): 
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    id: ObjectId = Field(alias="_id")
+    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
 
     title: str
     user_oid: ObjectId
-    slides_oid: list[ObjectId]
+    slides_oid: list[ObjectId] = Field(default_factory=list)
     status : PresentationStatus = PresentationStatus.WAITING
+    # 파일 경로
+    uploaded_path : str
     created_at: datetime = Field(
     default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul"))
 )
