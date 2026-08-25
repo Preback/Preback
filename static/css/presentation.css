@@ -50,6 +50,12 @@
   text-decoration: underline;
 }
 
+/* 작성자 (전체 프레젠테이션에서만 표시) */
+.presen-author {
+  font-size: 12px;
+  color: #444;
+}
+
 .presen-meta {
   font-size: 11px;
   color: #a5a5a5;
