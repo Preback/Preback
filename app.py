@@ -177,7 +177,7 @@ def getAllPresentations():
     if page is None or page < 0:
         page = 1
     total_pages = getPresentationPageCounts()
-    presentations = getPresentations(page)
+    presentations = getPresentations(page-1)
     return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
 @app.route('/presentations/<presentation_id>')
