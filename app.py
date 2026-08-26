@@ -107,7 +107,11 @@ def postUpload():
 
     file_id = uuid.uuid4().hex + '.pdf'
     save_path = os.path.join(UPLOAD_FOLDER, secure_filename(file_id))
-    file.save(save_path)
+    try:
+        file.save(save_path)
+    except:
+        app.logger.exception('file save 실패')
+        return render_template('upload.html', error='서버에서 파일을 저장하는데 실패했습니다.'), 500
 
     try:
         presentation_id = createPresentation(title, user_oid, save_path)
