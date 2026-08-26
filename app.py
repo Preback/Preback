@@ -128,10 +128,12 @@ def getLogin():
 def postLogin():
     user_id = request.form.get('user_id')
     user_pw = request.form.get('user_pw')
-    isSuccess, user_oid = identifyUser(user_id, user_pw)
+    isSuccess, user_oid, user_name = identifyUser(user_id, user_pw)
     if not isSuccess:
         return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다.'), 401
     session['user_oid'] = user_oid
+    session['user_id'] = user_id
+    session['user_name'] = user_name
     return redirect(url_for('getMyPresentations'))
 
 @app.route('/signup')

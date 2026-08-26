@@ -53,8 +53,8 @@ def identifyUser(userid, password):
     user = user_collection.find_one({"user_id" : userid})
     if user is None: return False, ""
     elif check_password_hash(user["password"], password):
-        return True, str(user["_id"])
-    else: return False, ""
+        return True, str(user["_id"]), str(user["user_name"])
+    else: return False, "", ""
 
 
 def deletePresentation(oid: str) -> bool:
