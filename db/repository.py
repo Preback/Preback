@@ -180,7 +180,7 @@ presentation_preview_pipeline = lambda page_num : [ # 유저 이름 추가해야
 
 
 
-def getAllPresentations(page_num): #page_num은 0부터 시작하는 것으로 가정
+def getPresentations(page_num): #page_num은 0부터 시작하는 것으로 가정
                         # 처음 이미지 필요. mongo에서도 index 기반 배열 접근 가능하다. python에서 배열 접근시 전체 배열 항목이 적재되어야 함/ 다만 img src str라서 '큰 오버헤드'는 아닌듯
                         # 제목, thumbnail, 전체 댓글 수, 전체 슬라이드 수, createdAt date
     # chaining,, 호출 순서 관련없음. lazy eval, 
