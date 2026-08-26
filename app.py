@@ -172,21 +172,21 @@ def getLogout():
 @app.route('/presentations/my')
 def getMyPresentations():
     page = request.args.get('page', type=int)
-    if page is None or page < 0:
-        page = 1
+    if page is None or page <= 0:
+        return redirect(url_for('getMyPresentations', page = 1))
     total_pages = getPresentationPageCounts(session.get('user_oid', '').strip())
     user_oid = session['user_oid']
-    presentations = getUserPresentations(user_oid, page)
-    return render_template('mypresen.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
+    presentations = getUserPresentations(user_oid, page-1)
+    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, html_title="전체 프레젠테이션")
 
 @app.route('/presentations/all')
 def getAllPresentations():
     page = request.args.get('page', type=int)
-    if page is None or page < 0:
-        page = 1
+    if page is None or page <= 0:
+        return redirect(url_for('getMyPresentations', page = 1))
     total_pages = getPresentationPageCounts()
     presentations = getPresentations(page-1)
-    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
+    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations,html_title="전체 프레젠테이션")
 
 @app.route('/presentations/<presentation_id>') #  댓글만 ajax로, 한 프레젠테이션은 새로고침 없는
 def getPresentation(presentation_id): # 
@@ -227,7 +227,7 @@ def getPresentation(presentation_id): #
         abort(404)
 
     return render_template(
-        'viewer.html',
+        'slides.html',
         presentation_title = presentation["presentation_title"],
         presentation_status = presentation["presentation_status"],
         slides= presentation["slides"]
@@ -257,6 +257,9 @@ def getComments(slide_oid):
         comments
     )
 
+@app.route('/api/presentations/<presentation_oid>/comments', methods=['GET'])
+def getCommentsCountBySlide(presentation_oid):
+    
 
 
 #comment crud는 성공 결과만 반환, 최신 업데이트는 클라이언트가 직접 요청 필요

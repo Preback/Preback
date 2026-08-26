@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% import "partials/_icons.html" as icon %}
+{% import "partials/_comment_item.html" as comment %}
+{% from "partials/presentation_card.html" import render_presentation_card %}
+{% include "partials/slide_card.html" %}
+
+{% block title %}{{ presentation.title }}{% endblock %}
+
+{%block head %}
+<script
+			  src="https://code.jquery.com/jquery-3.7.1.min.js"
+			  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+			  crossorigin="anonymous"></script>
+		
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
+{% endblock %}
+
+{% block header_left %}
+
+{% endblock %}
+
+
+{% block main_class %}{# cotent의 클래스. hidden 같은 제어 위해?#}{% endblock %}
+
+{% block content %}
+
+{# 카드 템플릿 #}
+<template id="slide-card-template">
+  {% include "partials/slide_card.html" %}
+</template>
+
+{# 모달 템플릿 #}
+
+{# 슬라이드 블록#}
+    <div class="slides-section">
+    </div>
+    
+{# 댓글 블록#}
+    <aside class="comments-container">
+
+        <div class="container-name"></div>
+        <div class="comments-section"></div>
+        <div class="comments-control"></div>
+        <div class="comments-input-group row">
+            <textarea class="form-control" placeholder="sth에 댓글 입력하기"></textarea>
+            <button type="button" class="btn btn-primary submit-comment">등록</button>
+        </div>
+    </aside>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/comment.js') }}">
+    
+</script>
+<script>
+    let slides = {{ slides | tojson}};
+    {# 
+    # slides =[ {
+    #     "_id" : string,
+    #     "presentation_oid" : string,
+    #     "img_src" : string,
+    #     "idx" : int,
+    #     "comments_count" : int
+    # } ]
+    #}
+
+
+    let cards = slides.map(slide => {
+        let card = $("#slide-card-template").contents().clone();
+        card.find(".img-src").attr("src", slide.img_src);
+        card.data("slide-oid") = slide._id;
+        card.find(".slide-idx").text('#'+(slide.idx + 1));
+        card.find(".slide-comments-count").text(`${comments_count} 댓글`);
+
+        return card;
+        })
+    
+    const publishComment = (slide_oid, text) => {
+        $.ajax({
+                method: 'POST',
+                url: `/api/slide/${slide_oid}/comments`,
+                                data: {
+                    text : text
+                },
+
+                success: (res) => {
+                    reloadCommentsCount();
+                    fetchComment()
+                },
+                error: (xhr) => {
+                    window.alert('메모 게시 실패' + xhr.status);
+                }
+            }).
+    }
+
+
+    const fetchComment = (slide_oid) => {
+        $.ajax({
+            method: 'GET',
+            url: `/api/slide/${slide_oid}/comments`,
+        });
+    }
+
+
+
+
+
+    $(".slides_section").append(cards);
+
+    $(".comments_container").on('click', '.submit-comment', (e) => {
+        const slide_oid = $(".comments_container").data('slide-oid');
+    });
+    
+
+</script>
+
+{% endblock %}
