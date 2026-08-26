@@ -1,7 +1,7 @@
 import os
 import uuid
 import pymongo
-from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts
+from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations
 from datetime import date, datetime, timedelta
 
 from dotenv import load_dotenv
@@ -76,7 +76,7 @@ def require_login():
         return
     if request.endpoint is None:
         return
-    if 'user_id' not in session:
+    if 'user_oid' not in session:
         return redirect(url_for('getLogin'))    # 비로그인시 로그인 페이지로 리다이렉트
 
 @app.route('/')
@@ -110,7 +110,7 @@ def postUpload():
     file.save(save_path)
 
     try:
-        presentation_id = createPresentation(title, user_oid, file_id)
+        presentation_id = createPresentation(title, user_oid, save_path)
     except Exception:
         os.remove(save_path)
         app.logger.exception('presentation insert 실패')
@@ -128,15 +128,11 @@ def getLogin():
 def postLogin():
     user_id = request.form.get('user_id')
     user_pw = request.form.get('user_pw')
-    if not identifyUser(user_id, user_pw):
+    isSuccess, user_oid = identifyUser(user_id, user_pw)
+    if not isSuccess:
         return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다.'), 401
-
-    # createPresentation 등이 ObjectId 를 요구하므로 로그인 아이디와 별도로 _id 를 담아둔다.
-    # TODO: identifyUser 가 유저 문서를 반환하도록 바뀌면 이 조회는 제거
-    user = user_collection.find_one({'user_id': user_id})
-    session['user_id'] = user_id
-    session['user_oid'] = str(user['_id'])
-    return redirect(url_for('getMyPresentations'))
+    session['user_oid'] = user_oid
+    return redirect(url_for('getMyPresentation'))
 
 @app.route('/signup')
 def getSignUp():
@@ -169,7 +165,13 @@ def getLogout():
 
 @app.route('/presentations/my')
 def getMyPresentations():
-    return render_template('mypresen.html', presentations=DUMMY_MY_PRESENTATIONS, active='my')
+    page = request.args.get('page', type=int)
+    if page is None or page < 0:
+        page = 1
+    total_pages = getPresentationPageCounts(session.get('user_id', '').strip())
+    user_oid = session['user_oid']
+    presentations = getUserPresentations(user_oid, page)
+    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
 @app.route('/presentations/all')
 def getAllPresentations():

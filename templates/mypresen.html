@@ -9,6 +9,12 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/presentation.css') }}">
 {% endblock %}
 
+{% macro page_idx(n, current) %}
+<li class="page-item {% if n==current %}active{% endif %}" {% if n==current %}aria-current="page"{% endif %}>
+    <a class="page-link" href="{{url_for('getMyPresentations',page=n)}}">{{n}}</a>
+</li>
+{% endmacro %}
+
 {% block content %}
 <div class="p-4">
     <div class="d-flex flex-wrap gap-3">
@@ -23,6 +29,21 @@
         {{ card.presentation_card(p) }}
         {% endfor %}
 
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% for n in range(1, total_pages + 1) %}
+            {{ page_idx(n, page) }}
+            {% endfor %}
+            <li>
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
 {% endblock %}
