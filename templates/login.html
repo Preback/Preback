@@ -11,9 +11,14 @@
     </head>
     <body class="d-flex align-items-center py-4 bg-body-tertiary">
         <main class="form-signin w-100 m-auto">
-            <form>
+            <form method="post" action="{{ url_for('postLogin') }}">
                 <h1 class="h3 mb-3 fw-normal text-center"><b>Preback</b></h1>
                 <h2 class="h5 mb-3 fw-normal text-center">발표자료 피드백 서비스</h2>
+
+                {% if error %}
+                <div class="alert alert-danger py-2 small">{{ error }}</div>
+                {% endif %}
+
                 <div class="btn-group w-100 mb-3">
                     {# <!-- <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary w-50">회원가입</a> -->  jinja2 문법 있으면 jinja2용 주석 쓰기 #}
                     <a href="/login" class="btn btn-outline-secondary w-50">로그인</a>

@@ -4,13 +4,19 @@ import pymongo
 from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts
 from datetime import date, datetime, timedelta
 
+from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, request, url_for, session
 from werkzeug.utils import secure_filename
 
+load_dotenv()
+
 app = Flask(__name__)
+# 세션(로그인 유지)에 필수. 없으면 session 사용 시 RuntimeError.
+app.secret_key = os.getenv('SECRET_KEY')
 
 # TODO: config.py로 옮기기
-PUBLIC_ENDPOINTS = {'getLogin', 'postLogin', 'getSignup', 'postSignup', 'static'}
+# 로그인 없이 접근 가능한 엔드포인트. 함수명과 정확히 일치해야 한다.
+PUBLIC_ENDPOINTS = {'getLogin', 'postLogin', 'getSignUp', 'postSignUp', 'static'}
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 ALLOWED_EXTENSIONS = {'.pdf'}
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
@@ -124,8 +130,13 @@ def postLogin():
     user_pw = request.form.get('user_pw')
     if not identifyUser(user_id, user_pw):
         return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다.'), 401
+
+    # createPresentation 등이 ObjectId 를 요구하므로 로그인 아이디와 별도로 _id 를 담아둔다.
+    # TODO: identifyUser 가 유저 문서를 반환하도록 바뀌면 이 조회는 제거
+    user = user_collection.find_one({'user_id': user_id})
     session['user_id'] = user_id
-    return redirect(url_for('getMyPresentation'))
+    session['user_oid'] = str(user['_id'])
+    return redirect(url_for('getMyPresentations'))
 
 @app.route('/signup')
 def getSignUp():
