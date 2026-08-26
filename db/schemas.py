@@ -35,9 +35,10 @@ class PresentationDB(BaseModel):
 
 class SlideDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    presentation_oid = ObjectId
+    presentation_oid: ObjectId
     img_src: str
-    replies: list[ObjectId]
+    replies: list[ObjectId] = Field(default_factory=list) # 댓글 id 배열(slideDB 생성을 위한 임시)
+    idx: int
 
 
 class CommentDB(BaseModel):
