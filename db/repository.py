@@ -250,7 +250,9 @@ def createComment(user_oid_str, slide_oid_str, text):
     return str(oid)
 
 def getSlidesByPresentation(presentation_oid: str):
-    #TODO pipeline 미완성
+    #일단 pipeline 수행됨. TODO 실제 의미가 제대로 나오는지 실제 유저 데이터로 테스트 필요
+    presentation = presentation_collection.find_one({"_id" : ObjectId(presentation_oid)})
+
     slides_pipeline = [
         {
             "$match" : {
@@ -287,9 +289,22 @@ def getSlidesByPresentation(presentation_oid: str):
             }
         }
     ]
+    
+    slides = slide_collection.aggregate(slides_pipeline)
+    res = {
+        "presentation_title" : presentation["title"],
+        "presentation_created_at" : presentation["created_at"],
+        "presentation_status" : presentation["status"],
+        "slides" : list(slides)
+    }
+    return res
 
-    res = slide_collection.aggregate(slides_pipeline)
-    return list(res)
+# def getOneSlide(slide_oid):  -> 보류, CSR 전체화면 고려중
+#     res = slide_collection.find_one({"_id" : ObjectId(slide_oid)})
+#     return {
+
+#     }
+
 
 def getCommentsBySlide(slide_oid):
     comments = comment_collection.find({
@@ -355,7 +370,9 @@ if __name__ == "__main__":
     createComment(user_oid,sample_slide_oid, "someNewComment")
     selected_comment_oid = createComment(user_oid, sample_slide_oid, "newComment to be deleted")
     print(getUserPresentations(user_oid, 0))
+    print()
     print(getSlidesByPresentation(presentation_oid))
+    print()
     print(getCommentsBySlide(str(sample_slide_oid)))
     print(deleteComment(selected_comment_oid))
     
