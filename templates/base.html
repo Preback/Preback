@@ -1,71 +1,45 @@
-{% import "partials/_icons.html" as icon %}
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{% block title %}Preback{% endblock %}</title>
-
     <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
+    <title>{% block title %}Preback{% endblock %}</title>
     <style>
-        /* Bootstrap 유틸리티로 안 되는 것만. 사이드바/헤더 높이 정렬용. */
-        .app-bar { height: 52px; }
-        .app-nav-link:hover { background-color: var(--bs-tertiary-bg); }
+        .app-bar {
+            height: 52px;
+        }
+
+        .sidebar {
+            width: 200px;
+        }
     </style>
-
-    {% block extra_css %}{% endblock %}
 </head>
-
 <body class="d-flex vh-100 overflow-hidden">
-
-    <aside class="d-flex flex-column flex-shrink-0 border-end" style="width: 200px;">
-        <a class="app-bar d-flex align-items-center px-3 border-bottom fw-semibold text-body text-decoration-none"
-           href="{{ url_for('getMyPresentations') }}">Preback</a>
-
-        <nav class="d-flex flex-column gap-1 p-2">
-            <a class="app-nav-link d-flex align-items-center gap-2 p-2 rounded small text-decoration-none {% if active == 'my' %}bg-dark text-white{% else %}text-body-secondary{% endif %}"
-               href="{{ url_for('getMyPresentations') }}">{{ icon.grid() }} 내 프레젠테이션</a>
-
-            <a class="app-nav-link d-flex align-items-center gap-2 p-2 rounded small text-decoration-none {% if active == 'all' %}bg-dark text-white{% else %}text-body-secondary{% endif %}"
-               href="{{ url_for('getAllPresentations') }}">{{ icon.globe() }} 전체 프레젠테이션</a>
+    <aside class="sidebar d-flex flex-column flex-shrink-0 px-3 bg-body-tertiary">
+        <a class="app-bar navbar-brand d-flex align-items-center p-2" href="{{url_for('getMyPresentations')}}">Preback</a>
+        <nav class="d-flex flex-column">
+            <div class="fs-6 p-2">내 프레젠테이션</div>
+            <div class="fs-6 p-2">전체 프레젠테이션</div>
         </nav>
-
-        <div class="mt-auto p-3 border-top">
-            {# TODO: 로그인 세션 연동 후 실제 사용자 정보로 교체 #}
-            <div class="small">사용자 이름</div>
-            <div class="text-body-tertiary" style="font-size: 11px;">@myuserid</div>
-
-            <div class="mt-2" style="font-size: 12px;">
-                <a class="d-inline-flex align-items-center gap-1 text-body-secondary text-decoration-none" href="{{ url_for('getLogout') }}">{{ icon.logout() }} 로그아웃</a>
-            </div>
-        </div>
     </aside>
-
     <div class="d-flex flex-column flex-grow-1 overflow-hidden">
-        <header class="app-bar d-flex align-items-center gap-3 px-3 border-bottom">
-            <div class="flex-grow-1 d-flex align-items-center gap-2 overflow-hidden">
-                {% block header_left %}
-                <h1 class="m-0 fs-6 text-truncate">{% block header_title %}{% endblock %}</h1>
+        <header class="app-bar navbar bg-body-tertiary">
+            <div class="container-fluid">
+                <div>
+                    {% block header_left %}
+                    <h1 class="m-0 fs-6">{% block header_title%}test{% endblock %}</h1>
+                    {% endblock %}
+                </div>
+                {% block header_actions %}
+                <div class="d-flex align-items-center">
+                    <input type="search" placeholder="검색..." aria-label="Search"/>
+                    <button class="btn btn-outline-success mx-3">업로드</button>
+                </div>
                 {% endblock %}
             </div>
-
-            {% block header_actions %}
-            {# TODO: 검색 기능 구현 후 action/method 연결 #}
-            <form class="input-group input-group-sm flex-shrink-0" role="search" style="width: 260px;">
-                <span class="input-group-text bg-body border-end-0 text-body-tertiary">{{ icon.search() }}</span>
-                <input type="search" name="q" class="form-control border-start-0 ps-0" placeholder="검색...">
-            </form>
-
-            <a class="btn btn-dark btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
-               href="{{ url_for('getUpload') }}">{{ icon.upload(14) }} 업로드</a>
-            {% endblock %}
         </header>
-
         <main class="flex-grow-1 {% block main_class %}overflow-auto{% endblock %}">
             {% block content %}{% endblock %}
         </main>
@@ -74,5 +48,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}
 </body>
-
 </html>
