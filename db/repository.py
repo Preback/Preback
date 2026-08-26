@@ -53,7 +53,7 @@ def identifyUser(userid, password):
     user = user_collection.find_one({"user_id" : userid})
     if user is None: return False, ""
     elif check_password_hash(user["password"], password):
-        return True, str(user["_oid"])
+        return True, str(user["_id"])
     else: return False, ""
 
 
@@ -178,14 +178,13 @@ presentation_preview_pipeline = lambda page_num : [    #page_num은 0부터 시�
         }
 ]
 
-def getPresentationPageCounts(user_oid : str):
-    count = presentation_collection.count_documents({"user_oid": ObjectId(user_oid)})
+def getPresentationPageCounts(user_oid : str = None):
+    if user_oid is None:
+        count = presentation_collection.count_documents({})
+    else : count = presentation_collection.count_documents({"user_oid": ObjectId(user_oid)})
 
     return count // items_per_page + (0 if count % items_per_page == 0 else 1)
-def getPresentationPageCounts():
-    count = presentation_collection.count_documents({})
 
-    return count // items_per_page + (0 if count % items_per_page == 0 else 1)
 
 
 def getPresentations(page_num): 
