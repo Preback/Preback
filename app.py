@@ -1,7 +1,7 @@
 import os
 import uuid
 import pymongo
-from db.repository import createPresentation, getCommentsBySlide, getSlidesByPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations
+from db.repository import createComment, createPresentation, getCommentsBySlide, getSlidesByPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations, updateComment
 from datetime import date, datetime, timedelta
 
 from dotenv import load_dotenv
@@ -221,31 +221,39 @@ def getComments(slide_oid):
 
 
 
-@app.route('/api/comments/<comment_oid>', methods=['POST'])
-def postComment(coment_oid):
-    presentation = find_presentation(presentation_id)
-    if presentation is None:
-        abort(404)
+#comment crud는 성공 결과만 반환, 최신 업데이트는 클라이언트가 직접 요청 필요
 
-    pid = presentation['id']
-    slide = min(max(request.form.get('slide', default=1, type=int), 1), presentation['slide_count'])
-    body = (request.form.get('body') or '').strip()
+@app.route('/api/slide/<slide_oid>/comments', methods=['POST'])
+def postComment(slide_oid):
+    user_oid = session['user_oid']
+    new_text = request.form.get('text')
 
-    if body:
-        # TODO: db/repository.py 연동 후 교체. 작성자는 로그인 세션에서 가져온다.
-        DUMMY_COMMENTS.append({
-            'presentation_id': pid,
-            'slide': slide,
-            'author': '사용자 이름',
-            'body': body,
-            'created_at': datetime.now(),
-        }) 
+    if createComment(user_oid, slide_oid, new_text) is True:
+        return jsonify({
+            'result' : "success"
+        })
+    else: abort(500)
 
-    return redirect(url_for('getPresentation', presentation_id=pid, slide=slide))
+
+
+@app.route('/api/comments/<comment_oid>', methods=['PATCH']) # updated_at이 없음. created_at은 최초 생성으로만 유지하는 구현
+def patchComment(comment_oid):
+    new_text = request.form.get('text')
+
+    if updateComment(comment_oid, new_text) is True:
+        return jsonify({
+            'result' : "success"
+        })
+    else: abort(500)
 
 @app.route('/api/comments/<comment_oid>', methods=['DELETE'])
-def deleteComment(coment_oid):
-    
+def deleteComment(comment_oid):
+
+    if deleteComment(comment_oid) is True:
+        return jsonify({
+            "result" : "success"
+        })
+    else: abort(500)
 
 if __name__ == '__main__':
    app.run('0.0.0.0', port=5000, debug=True)

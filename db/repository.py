@@ -245,9 +245,8 @@ def getUserPresentations(user_oid_str, page_num):
 def createComment(user_oid_str, slide_oid_str, text):
     new_comment = schemas.CommentDB(reply=text, user_oid=ObjectId(user_oid_str), slide_oid=ObjectId(slide_oid_str))
     comment_document = comment_collection.insert_one(new_comment.model_dump(by_alias=True))
-    oid = comment_document.inserted_id
     
-    return str(oid)
+    return True
 
 def getSlidesByPresentation(presentation_oid: str):
     #일단 pipeline 수행됨. TODO 실제 의미가 제대로 나오는지 실제 유저 데이터로 테스트 필요
