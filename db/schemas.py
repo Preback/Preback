@@ -35,9 +35,10 @@ class PresentationDB(BaseModel):
 
 class SlideDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    presentation_oid = ObjectId
+    presentation_oid: ObjectId
     img_src: str
     replies: list[ObjectId]
+    idx: int
 
 
 class CommentDB(BaseModel):

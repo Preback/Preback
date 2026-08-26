@@ -1,6 +1,6 @@
 import os
 import uuid
-from db.repository import CreatePresentation
+from db.repository import createPresentation
 from datetime import date, datetime, timedelta
 
 from flask import Flask, abort, redirect, render_template, request, url_for, session
@@ -43,8 +43,10 @@ DUMMY_COMMENTS = [
 
 
 def find_presentation(presentation_id):
+    # 라우트 파라미터는 문자열인데 더미 데이터의 id는 정수라 문자열로 맞춰 비교한다.
+    # TODO: DB 연동 시 ObjectId 조회로 교체
     for p in DUMMY_MY_PRESENTATIONS + DUMMY_ALL_PRESENTATIONS:
-        if p['id'] == presentation_id:
+        if str(p['id']) == str(presentation_id):
             return p
     return None
 
@@ -130,18 +132,19 @@ def getPresentation(presentation_id):
     if presentation is None:
         abort(404)
 
+    pid = presentation['id']
     slide_count = presentation['slide_count']
     current_slide = min(max(request.args.get('slide', default=1, type=int), 1), slide_count)
 
     comments = sorted(
         (c for c in DUMMY_COMMENTS
-         if c['presentation_id'] == presentation_id and c['slide'] == current_slide),
+         if c['presentation_id'] == pid and c['slide'] == current_slide),
         key=lambda c: c['created_at'],
     )
 
     comment_counts = {}
     for c in DUMMY_COMMENTS:
-        if c['presentation_id'] == presentation_id:
+        if c['presentation_id'] == pid:
             comment_counts[c['slide']] = comment_counts.get(c['slide'], 0) + 1
 
     return render_template(
@@ -153,26 +156,27 @@ def getPresentation(presentation_id):
         comment_counts=comment_counts,
     )
 
-@app.route('/presentations/<int:presentation_id>/comments', methods=['POST'])
+@app.route('/presentations/<presentation_id>/comments', methods=['POST'])
 def postComment(presentation_id):
     presentation = find_presentation(presentation_id)
     if presentation is None:
         abort(404)
 
+    pid = presentation['id']
     slide = min(max(request.form.get('slide', default=1, type=int), 1), presentation['slide_count'])
     body = (request.form.get('body') or '').strip()
 
     if body:
         # TODO: db/repository.py 연동 후 교체. 작성자는 로그인 세션에서 가져온다.
         DUMMY_COMMENTS.append({
-            'presentation_id': presentation_id,
+            'presentation_id': pid,
             'slide': slide,
             'author': '사용자 이름',
             'body': body,
             'created_at': datetime.now(),
         })
 
-    return redirect(url_for('getPresentation', presentation_id=presentation_id, slide=slide))
+    return redirect(url_for('getPresentation', presentation_id=pid, slide=slide))
 
 if __name__ == '__main__':
    app.run('0.0.0.0', port=5000, debug=True)

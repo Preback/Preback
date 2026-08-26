@@ -66,15 +66,41 @@ def createPresentation(title, user_oid: str, uploaded_path):
      # user에도 배열추가? -> user에 있는 presentation id 배열 빼는게 나을듯
     return str(oid)
 
-def updateConvertingPresentation(presentation_oid):
-    update to 
+def updatePresentationStatus(presentation_oid: str, status: schemas.PresentationStatus):
+    result = presentation_collection.update_one(
+        {"_id": ObjectId(presentation_oid)},
+        {"$set": {"status": status}}
+    )
+    return result.modified_count == 1
 
 def updateConvertedPresentation(presentation_oid: str, uploaded_imgs: list[str]):
+    if not uploaded_imgs:
+        return False
 
+    pres_oid = ObjectId(presentation_oid)
 
-    return True
+    # process_pdf 가 돌려준 리스트=페이지 순서, enumerate로 idx 기록
+    docs = [
+        schemas.SlideDB(
+            presentation_oid=pres_oid,
+            idx=i,
+            img_src=url,
+        ).model_dump(by_alias=True)
+        for i, url in enumerate(uploaded_imgs)
+    ]
 
-    return False
+    # insert_many: 입력 순서대로 inserted_ids반환
+    slide_oids = slide_collection.insert_many(docs).inserted_ids
+
+    result = presentation_collection.update_one(
+        {"_id": pres_oid},
+        {"$set": {
+            "slides_oid": slide_oids,
+            "status": schemas.PresentationStatus.CONVERTED.value,
+        }},
+    )
+    return result.matched_count == 1
+
 
 items_per_page = 10
 
@@ -241,7 +267,7 @@ def getSlidesByPresentation(presentation_oid: str):
             "$set" : {
                 "user_name": "$"
             }
-        }
+        },
         {
             "$lookup": {
                 "from": "slides",
@@ -287,11 +313,10 @@ def getSlidesByPresentation(presentation_oid: str):
             }
 
         }
-        },
+        },{
         "$project" : {
             "slides" : 1,
-            "_id" : 1,
-
+            "_id" : 1,}
         }
     ]
 
