@@ -216,7 +216,7 @@ def getPresentations(page_num):
 
     return [{
             **presentation,
-            "created_at" : presentation["created_at"].isoformat(),
+            "created_at" : presentation["created_at"],
             "user_oid" : str(presentation["user_oid"]),
             "_id" : str(presentation["_id"])
         }
@@ -234,7 +234,7 @@ def getUserPresentations(user_oid_str, page_num):
 
     return [{
         **presentation,
-        "created_at" : presentation["created_at"].isoformat(),
+        "created_at" : presentation["created_at"],
         "user_oid" : str(presentation["user_oid"]),
         "_id" : str(presentation["_id"])
     }

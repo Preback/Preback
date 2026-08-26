@@ -14,7 +14,7 @@
     
     <div class="d-flex flex-wrap gap-3">
         {% for presentation in presentations %}
-            {% render_presentation_card(presentation)%}
+            {{ render_presentation_card(presentation) }}
         {% endfor %}
     </div>
     
@@ -22,7 +22,7 @@
         <ul class="pagination">
             {% for page_idx in range(1, total_pages) %}
             <li class="page-item">
-                <a class="page-link" href="{{url_for('getAllPresentations', page=page_idx)}}" >{{page_idx}}</a>
+                <a class="page-link" href="{{url_for('getAllPresentations', page=page_idx)}}"> {{page_idx}} </a>
             </li>
             {%endfor%}
         </ul>

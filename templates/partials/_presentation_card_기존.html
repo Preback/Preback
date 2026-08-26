@@ -1,0 +1,39 @@
+{# 발표자료 카드 — 내 프레젠테이션 / 전체 프레젠테이션 공용
+   사용법: {% import "partials/_presentation_card.html" as card %}
+           {{ card.presentation_card(p) }}              내 프레젠테이션 (작성자 숨김)
+           {{ card.presentation_card(p, true) }}        전체 프레젠테이션 (작성자 표시) #}
+
+{% import "partials/_icons.html" as icon %}
+
+{% macro presentation_card(p, show_author=false) -%}
+<article class="card presen-card overflow-hidden">
+    <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none"
+       href="{{ url_for('getPresentation', presentation_id=p.id) }}">
+        {% if p.thumbnail %}
+        <img src="{{ url_for('static', filename='slides/' ~ p.slide_thumbnail) }}" alt="{{ p.title }} 미리보기">
+        {% else %}
+        <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
+        {% endif %}
+    </a>
+    <div class="presen-body">
+        <div class="d-flex align-items-center gap-1">
+            <a class="presen-title flex-grow-1 text-truncate text-decoration-none"
+               href="{{ url_for('getPresentation', presentation_id=p.id) }}">{{ p.title }}</a>
+        </div>
+
+        {% if show_author %}
+        <div class="presen-author text-truncate mt-2">{{ p.user_name }}</div>
+        {% endif %}
+
+        <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
+            <span class="d-flex align-items-center gap-2">
+                <span>{{ p.slide_count }} 슬라이드</span>
+                <span class="d-inline-flex align-items-center gap-1">
+                    {{ icon.comment() }} {{ p.comment_count }}
+                </span>
+            </span>
+            <time datetime="{{ p.created_at }}">{{ p.created_at[5:7] }}월 {{ p.created_at[8:10] }}일</time>
+        </div>
+    </div>
+</article>
+{%- endmacro %}
