@@ -8,6 +8,12 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/presentation.css') }}">
 {% endblock %}
 
+{% macro page_idx(n, current) %}
+<li class="page-item {% if n==current %}active{% endif %}" {% if n==current %}aria-current="page"{% endif %}>
+    <a class="page-link" href="{{url_for('getAllPresentations',page=n)}}">{{n}}</a>
+</li>
+{% endmacro %}
+
 {% block content %}
 <div class="p-4">
     <p class="small text-body-tertiary mb-3">모든 사용자가 올린 프레젠테이션을 볼 수 있습니다.</p>
@@ -17,5 +23,20 @@
         {{ card.presentation_card(p, true) }}
         {% endfor %}
     </div>
+    <ul class="pagination">
+        <li class="page-item">
+            <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% for n in range(1, total_pages + 1) %}
+        {{ page_idx(n, page) }}
+        {% endfor %}
+        <li>
+            <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
 </div>
 {% endblock %}
