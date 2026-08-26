@@ -10,7 +10,7 @@
     <a class="presen-thumb d-flex align-items-center justify-content-center border-bottom text-decoration-none"
        href="{{ url_for('getPresentation', presentation_id=p.id) }}">
         {% if p.thumbnail %}
-        <img src="{{ url_for('static', filename='slides/' ~ p.thumbnail) }}" alt="{{ p.title }} 미리보기">
+        <img src="{{ url_for('static', filename='slides/' ~ p.slide_thumbnail) }}" alt="{{ p.title }} 미리보기">
         {% else %}
         <span class="presen-thumb__placeholder">슬라이드 미리보기</span>
         {% endif %}
@@ -22,7 +22,7 @@
         </div>
 
         {% if show_author %}
-        <div class="presen-author text-truncate mt-2">{{ p.author }}</div>
+        <div class="presen-author text-truncate mt-2">{{ p.user_name }}</div>
         {% endif %}
 
         <div class="presen-meta d-flex align-items-center justify-content-between mt-2">
@@ -32,7 +32,7 @@
                     {{ icon.comment() }} {{ p.comment_count }}
                 </span>
             </span>
-            <time datetime="{{ p.updated_at.isoformat() }}">{{ p.updated_at.month }}월 {{ p.updated_at.day }}일</time>
+            <time datetime="{{ p.created_at }}">{{ p.created_at[5:7] }}월 {{ p.created_at[8:10] }}일</time>
         </div>
     </div>
 </article>
