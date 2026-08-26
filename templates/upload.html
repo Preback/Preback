@@ -6,33 +6,21 @@
 
 {% block content %}
 <div class="p-4">
-    <form class="mx-auto" style="max-width: 480px;"
-          method="post" action="{{ url_for('postUpload') }}" enctype="multipart/form-data">
-
+    <form class="mx-auto" style="max-width:500px;" method="post" action="{{url_for('postUpload')}}" enctype="multipart/form-data">
         {% if error %}
-        <div class="alert alert-danger py-2 small">{{ error }}</div>
+        <div class="alert alert-danger small">{{error}}</div>
         {% endif %}
-
-        {# 점선 테두리는 Bootstrap의 --bs-border-style 변수를 덮어써서 처리 (border-dashed 유틸리티가 없음) #}
-        <label id="dropZone" for="fileInput" role="button"
-               class="d-flex flex-column align-items-center justify-content-center text-center w-100 border rounded py-5 px-4 mb-4"
-               style="--bs-border-style: dashed;">
-
-            <span class="d-flex align-items-center justify-content-center rounded-circle border mb-3 text-body-tertiary"
-                  style="width: 44px; height: 44px;">{{ icon.cloud_upload(20) }}</span>
-
-            <span class="small text-body-secondary mb-3">파일을 이곳으로 끌어오거나</span>
+        <label id="dropZone" for="fileInput" role="button" class="d-flex flex-column align-items-center justify-content-center text-center rounded border py-5 mb-5" style="--bs-border-style:dashed;">
+            <span class="text-body-secondary small mb-3">파일을 이곳으로 끌어오거나</span>
             <span class="btn btn-outline-secondary btn-sm mb-3">컴퓨터에서 선택</span>
-
-            <span id="fileHint" class="text-body-tertiary" style="font-size: 12px;">.pdf 파일만 지원 · 최대 50MB</span>
-        </label>
+            <span id="fileHint" class="text-body-tertiary mb-3" style="font-size:12px;">.pdf 파일만 지원·최대 50MB</span>
+        </label><div class="mb-4">
         <input type="file" id="fileInput" name="file" accept=".pdf" class="d-none">
 
         <div class="mb-4">
             <label for="titleInput" class="form-label small">제목</label>
             <input type="text" id="titleInput" name="title" class="form-control" placeholder="프레젠테이션 제목 입력">
         </div>
-
         <div class="d-flex justify-content-end gap-2">
             <a class="btn btn-outline-secondary" href="{{ url_for('getMyPresentations') }}">취소</a>
             <button type="submit" id="submitBtn" class="btn btn-secondary" disabled>첨부하고 열기</button>
@@ -42,5 +30,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static',filename='js/upload.js')}}"></script>
 {% endblock %}
