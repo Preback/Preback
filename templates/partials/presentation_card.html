@@ -1,0 +1,33 @@
+{% macro render_presentation_card(presentation) %}
+<a class="card" data-oid="{{presentation._id}}" href=" {{ url_for('getPresentation', presentation_id=presentation._id) }} ">
+    {#ssr이므로 변수 도입#}
+    {% if presentation.status != 'converted' %}
+    <div class="card-img-top bg-light text-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
+      <div class="text-center">
+        <div>{% if presentation.status == 'converting'%}
+            변환중
+            {% elif presentation.status == 'waiting'%}
+            변환 대기중
+            {% elif presentation.status == 'failed'%}
+            변환 실패
+            {%endif%}
+        </div>
+      </div>
+    </div>
+    {% else %}
+      <img src="{{ presentation.slide_thumbnail }}" class="card-img-top" alt="{{presentation.title}}">
+    {% endif %}
+  <div class="card-body">
+    <h5 class="card-title">{{presentation.title}}</h5>
+    {% if presentation.user_name %}
+    <p class="card-text"> {{presentation.user_name}} </p>
+    {% endif %}
+    <p class="card-text">{{presentation.slide_count}} 슬라이드</p>
+    {% if presentation.comment_count != 0 %}
+        <p class="card-text">{{presentation.comment_count}} comments</p>
+    {% endif %}
+    <p class="card-text"><small class="text-body-secondary">{{ presentation.created_at.strftime('%m월 %d일') }}</small></p>
+  </div>
+
+</a>
+{% endmacro %}

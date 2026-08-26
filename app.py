@@ -184,6 +184,38 @@ def getAllPresentations():
 
 @app.route('/presentations/<presentation_id>') #  댓글만 ajax로, 한 프레젠테이션은 새로고침 없는
 def getPresentation(presentation_id): # 
+    if presentation_id == "debug":
+        dummy_slides = [
+            {
+                "_id": "slide_001",
+                "presentation_oid": "presentation_debug",
+                "img_src": "/static/img/sample1.jpg",
+                "idx": 0,
+                "comments_count": 3
+            },
+            {
+                "_id": "slide_002",
+                "presentation_oid": "presentation_debug",
+                "img_src": "/static/img/sample2.jpg",
+                "idx": 1,
+                "comments_count": 0
+            },
+            {
+                "_id": "slide_003",
+                "presentation_oid": "presentation_debug",
+                "img_src": "/static/img/sample3.jpg",
+                "idx": 2,
+                "comments_count": 5
+            }
+        ]
+
+        return render_template(
+            "viewer.html",
+            presentation_title="디버그 프레젠테이션",
+            presentation_status="converted",
+            slides=dummy_slides
+        )
+    
     try: presentation = getSlidesByPresentation(presentation_id)
     except: 
         abort(404)
