@@ -1,5 +1,5 @@
 {% macro render_presentation_card(presentation) %}
-<a class="card" data-oid="{{presentation._id}}" href=" {{ url_for('getPresentation', presentation_id=presentation._id) }} ">
+<a class="card h-100 w-100 text-decoration-none"  data-oid="{{presentation._id}}" href=" {{ url_for('getPresentation', presentation_id=presentation._id) }} ">
     {#ssr이므로 변수 도입#}
     {% if presentation.status != 'converted' %}
     <div class="card-img-top bg-light text-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
