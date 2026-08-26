@@ -132,7 +132,7 @@ def postLogin():
     if not isSuccess:
         return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다.'), 401
     session['user_oid'] = user_oid
-    return redirect(url_for('getMyPresentation'))
+    return redirect(url_for('getMyPresentations'))
 
 @app.route('/signup')
 def getSignUp():
@@ -168,7 +168,7 @@ def getMyPresentations():
     page = request.args.get('page', type=int)
     if page is None or page < 0:
         page = 1
-    total_pages = getPresentationPageCounts(session.get('user_id', '').strip())
+    total_pages = getPresentationPageCounts(session.get('user_oid', '').strip())
     user_oid = session['user_oid']
     presentations = getUserPresentations(user_oid, page)
     return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
