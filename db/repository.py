@@ -51,10 +51,10 @@ def registerUser(userid, username, password):
 def identifyUser(userid, password):
 
     user = user_collection.find_one({"user_id" : userid})
-    if user is None: return False
+    if user is None: return False, ""
     elif check_password_hash(user["password"], password):
-        return True
-    else: return False
+        return True, str(user["_oid"])
+    else: return False, ""
 
 
 def deletePresentation(oid: str) -> bool:
@@ -248,11 +248,10 @@ def createComment(user_oid_str, slide_oid_str, text):
     comment_document = comment_collection.insert_one(new_comment.model_dump(by_alias=True))
     oid = comment_document.inserted_id
     
-    return True, str(oid)
+    return str(oid)
 
 def getSlidesByPresentation(presentation_oid: str):
     #TODO pipeline 미완성
-    #프레젠테이션 배열에서만 순서 -> 
     slides_pipeline = [
         {
             "$match" : {
@@ -278,11 +277,20 @@ def getSlidesByPresentation(presentation_oid: str):
                    "$size" : "$comments"
                }
            }
+        },
+        {
+            "$project" : {
+                "_id" : 1,
+                "presentation_oid" : 1,
+                "img_src" : 1,
+                "idx" : 1,
+                "comments_count" : 1
+            }
         }
-        
     ]
 
     res = slide_collection.aggregate(slides_pipeline)
+    return list(res)
 
 def getCommentsBySlide(slide_oid):
     comments = comment_collection.find({
@@ -312,7 +320,7 @@ def deleteComment(comment_oid: str):
         "_id" : ObjectId(comment_oid)
     })
 
-    return True if result.matched_count == 1 else False
+    return True if result.deleted_count == 1 else False
 
 if __name__ == "__main__":
     repository_local_test_user = "locTestUser"
@@ -339,4 +347,16 @@ if __name__ == "__main__":
     print(getPresentations(0))
     print(getUserPresentations("507f191e810c19729de860ea", 0)) # 틀린
     print(getUserPresentations(user_oid, 0))
+    print("\n")
+    
+    sample_slide_oid = slide_collection.find_one({
+        "presentation_oid" : ObjectId(presentation_oid),
+        "idx" : 0
+    })["_id"]
+    createComment(user_oid,sample_slide_oid, "someNewComment")
+    selected_comment_oid = createComment(user_oid, sample_slide_oid, "newComment to be deleted")
+    print(getUserPresentations(user_oid, 0))
+    print(getSlidesByPresentation(presentation_oid))
+    print(getCommentsBySlide(str(sample_slide_oid)))
+    print(deleteComment(selected_comment_oid))
     

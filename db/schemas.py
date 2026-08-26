@@ -49,6 +49,4 @@ class CommentDB(BaseModel):
     slide_oid: ObjectId
     created_at: datetime = Field(
     default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul"))
-   
 )
-
