@@ -16,8 +16,8 @@ class UserDB(BaseModel):
     id: ObjectId = Field(default_factory=ObjectId, alias="_id")
     user_name: str
     user_id: str
-    presentations_oid: list[ObjectId] = Field(default_factory=list)
-    password: bytes
+    # presentations_oid: list[ObjectId] = Field(default_factory=list)  -> 제거, presentation에서만 찾기
+    password: str
 
 class PresentationDB(BaseModel): 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -25,7 +25,7 @@ class PresentationDB(BaseModel):
 
     title: str
     user_oid: ObjectId
-    slides_oid: list[ObjectId] = Field(default_factory=list)
+    slides_oid: list[ObjectId] = Field(default_factory=list) # 순서 때문에 배열은 필요
     status : PresentationStatus = PresentationStatus.WAITING
     # 파일 경로
     uploaded_path : str
@@ -35,12 +35,13 @@ class PresentationDB(BaseModel):
 
 class SlideDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
+    presentation_oid = ObjectId
     img_src: str
     replies: list[ObjectId]
 
 
 class CommentDB(BaseModel):
-    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     id: ObjectId = Field(default_factory=ObjectId, alias="_id")
     reply: str
     user_oid : ObjectId
