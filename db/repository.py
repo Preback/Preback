@@ -3,16 +3,19 @@ from flask import Flask, jsonify, render_template, request
 from bson import ObjectId
 from pymongo import MongoClient
 import pymongo
-import schemas
+from werkzeug.security import check_password_hash, generate_password_hash
+from . import schemas
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
 app = Flask(__name__)
-client = MongoClient(os.getenv("MONGO_URI"), int(os.getenv("MONGO_PORT")))  # mongoDB는 27017 포트로 돌아갑니다.
+client = MongoClient(os.getenv("MONGO_URI")) 
 db = client.preback_db
 
+
+# TODO : 프레젠테이션 삭제 / 댓글 update, del.  구현 필요/ 프레젠테이션에서 슬라이드 데이터 get 필요
 
 user_collection = db.users
 db.users.create_index("user_id", unique=True)
@@ -21,6 +24,7 @@ presentation_collection = db.presentations
 slide_collection = db.slides
 comment_collection = db.comments
 
+
 def checkDupUserId(user_id):
     return user_collection.find_one({
         "user_id" : user_id
@@ -28,8 +32,8 @@ def checkDupUserId(user_id):
 
 def registerUser(userid, username, password):
 
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-
+    hashed_password = generate_password_hash(password)
+    
 
     user_data = schemas.UserDB(
         user_id=userid,
@@ -38,18 +42,39 @@ def registerUser(userid, username, password):
     )
 
     # 데이터 삽입 (생성 자체는 auth와 무관)
+
     result = user_collection.insert_one(user_data.model_dump(by_alias=True))
-    print(f"유저 생성 완료! ID: {result.inserted_id}")
+    
+
+def identifyUser(userid, password):
+
+    user = user_collection.find_one({"user_id" : userid})
+    if user is None: return False
+    elif check_password_hash(user["password"], password):
+        return True
+    else: return False
 
 
-def createPresentation(title, user_oid, uploaded_path):
+def deletePresentation(oid: str) -> bool:
+    presentation_delete_result = presentation_collection.delete_one()
 
-    new_presentation = schemas.PresentationDB(title=title, user_oid=user_oid, uploaded_path=uploaded_path)
+def createPresentation(title, user_oid: str, uploaded_path):
+
+    new_presentation = schemas.PresentationDB(title=title, user_oid=ObjectId(user_oid), uploaded_path=uploaded_path)
     presentation_document = presentation_collection.insert_one(new_presentation.model_dump(by_alias=True))
     oid = presentation_document.inserted_id
      # user에도 배열추가? -> user에 있는 presentation id 배열 빼는게 나을듯
     return str(oid)
 
+def updateConvertingPresentation(presentation_oid):
+    update to 
+
+def updateConvertedPresentation(presentation_oid: str, uploaded_imgs: list[str]):
+
+
+    return True
+
+    return False
 
 items_per_page = 10
 
@@ -191,9 +216,84 @@ def createComment(user_oid_str, slide_oid_str, text):
     comment_document = comment_collection.insert_one(new_comment.model_dump(by_alias=True))
     oid = comment_document.inserted_id
     
-    return str(oid)
+    return True, str(oid)
 
+def getSlidesByPresentation(presentation_oid: str):
 
+    #프레젠테이션 배열에서만 순서 -> 
+    slides_pipeline = [
+        {
+            "$match" : {
+                "presentation_oid" : str(presentation_oid)
+            }
+        },
+        {
+            "$limit" : 1
+        },{
+            "$lookup" : {
+                "from" : "users",
+                "localField" : "user_oid",
+                "foreignField" : "_id",
+                "as" : "user"
+            }
+        },
+        {
+            "$set" : {
+                "user_name": "$"
+            }
+        }
+        {
+            "$lookup": {
+                "from": "slides",
+                "localField": "slides_oid",
+                "foreignField": "_id",
+                "as": "slides"
+            }
+        },
+        {
+            "$set" : {
+                "slides" : {
+                    "$map" : {
+                        "input" : "$slides_oid",
+                        "as" : "$slide_oid",
+                        "in" : {
+                            "$arrayElemAt" : [{
+                                "$filter": {
+                                "input": "$slide_docs",
+                                "as": "slide",
+                                "cond": { "$eq": ["$$slide._id", "$$slide_oid"] }
+                                }
+                            }, 0
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+        ,{
+            "$set" : {
+                "slides" : {
+                "$map" : {
+                "input": "$slides",
+                "as" : "slide",
+                "in" : {
+                    "replies_count" : {
+                        "$size" : "$$slide.replies"
+                    },
+                    "img_src" : "$$slide.img_src",
+                    "_id" : "$$slide._id"
+                }
+            }
+            }
+
+        }
+        },
+        "$project" : {
+            "slides" : 1,
+            "_id" : 1,
+
+        }
+    ]
 
 def getCommentsBySlide(slide_oid):
     comments = comment_collection.find({
@@ -211,4 +311,7 @@ def getCommentsBySlide(slide_oid):
 
 
 if "__name__" == "__main__":
-    somethin
+    repository_local_test_user = "locTestUser"
+    repository_local_test_local_oid
+    if not checkDupUserId:
+        registerUser(repository_local_test_user, )
