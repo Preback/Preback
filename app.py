@@ -183,7 +183,7 @@ def getMyPresentations():
 def getAllPresentations():
     page = request.args.get('page', type=int)
     if page is None or page <= 0:
-        return redirect(url_for('getMyPresentations', page = 1))
+        return redirect(url_for('getAllPresentations', page = 1))
     total_pages = getPresentationPageCounts()
     presentations = getPresentations(page-1)
     return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations,html_title="전체 프레젠테이션")
@@ -216,7 +216,7 @@ def getPresentation(presentation_id): #
         ]
 
         return render_template(
-            "viewer.html",
+            "slides.html",
             presentation_title="디버그 프레젠테이션",
             presentation_status="converted",
             slides=dummy_slides
@@ -230,7 +230,7 @@ def getPresentation(presentation_id): #
         'slides.html',
         presentation_title = presentation["presentation_title"],
         presentation_status = presentation["presentation_status"],
-        slides= presentation["slides"]
+        slides = presentation["slides"]
     )
 
     # slides =[ {
@@ -257,9 +257,9 @@ def getComments(slide_oid):
         comments
     )
 
-@app.route('/api/presentations/<presentation_oid>/comments', methods=['GET'])
-def getCommentsCountBySlide(presentation_oid):
-    
+# @app.route('/api/presentations/<presentation_oid>/comments', methods=['GET'])
+# def getCommentsCountBySlide(presentation_oid):
+
 
 
 #comment crud는 성공 결과만 반환, 최신 업데이트는 클라이언트가 직접 요청 필요

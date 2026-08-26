@@ -51,7 +51,7 @@ def registerUser(userid, username, password):
 def identifyUser(userid, password):
 
     user = user_collection.find_one({"user_id" : userid})
-    if user is None: return False, ""
+    if user is None: return False, "", ""
     elif check_password_hash(user["password"], password):
         return True, str(user["_id"]), str(user["user_name"])
     else: return False, "", ""
@@ -92,13 +92,11 @@ def updateConvertedPresentation(presentation_oid: str, uploaded_imgs: list[str])
         for i, url in enumerate(uploaded_imgs)
     ]
 
-    # insert_many: 입력 순서대로 inserted_ids반환
-    slide_oids = slide_collection.insert_many(docs).inserted_ids
+    slide_collection.insert_many(docs)
 
     result = presentation_collection.update_one(
         {"_id": pres_oid},
         {"$set": {
-            "slides_oid": slide_oids,
             "status": schemas.PresentationStatus.CONVERTED.value,
         }},
     )
@@ -121,18 +119,19 @@ presentation_preview_pipeline = lambda page_num : [    #page_num은 0부터 시�
             "$limit": items_per_page
         },
         {
-            "$set": {
-                "first_slide_oid": {
-                    "$arrayElemAt": ["$slides_oid", 0]
-                }
+            "$lookup": {
+                "from": "slides",
+                "localField": "_id",
+                "foreignField": "presentation_oid",
+                "as": "slides"
             }
         },
         {
             "$lookup": {
-                "from": "slides", 
-                "localField": "slides_oid",  
-                "foreignField": "_id",  
-                "as": "slides"  
+                "from": "comments",
+                "localField": "slides._id",
+                "foreignField": "slide_oid",
+                "as": "comments"
             }
         },
         { # lookup이 slides 배열을 순서에 맞게 못가져오기 때문에 돌아갔다 ->  : idx=  0인 것 필터하면 되므로 더 단순해짐, 수정 하는게 나아 보인다 -> done
@@ -159,21 +158,10 @@ presentation_preview_pipeline = lambda page_num : [    #page_num은 0부터 시�
                 "created_at" : 1,
                 "slide_thumbnail" : "$first_slide.img_src",
                 "slide_count" : {
-                    "$size" : "$slides_oid"
+                    "$size" : "$slides"
                 },
                 "status" : 1,
-                "created_at" : 1,
-                "comment_count" : { # TODO 
-                    "$sum" : {
-                        "$map" : {
-                            "input": "$slides",
-                            "as" : "slide",
-                            "in" : {
-                                "$size" : "$$slide.replies"
-                            }
-                        }
-                    }
-                }
+                "comment_count" : {"$size" : "$comments"}
             }
         }
 ]

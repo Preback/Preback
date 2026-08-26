@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% import "partials/_icons.html" as icon %}
 {% import "partials/_comment_item.html" as comment %}
-{% from "partials/presentation_card.html" import render_presentation_card %}
 {% include "partials/slide_card.html" %}
 
-{% block title %}{{ presentation.title }}{% endblock %}
-
+{% block title %}{{ presentation_title }}{% endblock %}
+{% block header_title %} {{ presentation_title}} 
+    <span> {{ slides|length }} 개 슬라이드</span>
+{% endblock %}
 {%block head %}
 <script
 			  src="https://code.jquery.com/jquery-3.7.1.min.js"
@@ -18,12 +19,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
 {% endblock %}
 
-{% block header_left %}
-
-{% endblock %}
-
-
-{% block main_class %}{# cotent의 클래스. hidden 같은 제어 위해?#}{% endblock %}
 
 {% block content %}
 
@@ -57,7 +52,49 @@
     
 </script>
 <script>
-    let slides = {{ slides | tojson}};
+
+    const publishComment = (slide_oid, text) => {
+        $.ajax({
+                method: 'POST',
+                url: `/api/slide/${slide_oid}/comments`,
+                                data: {
+                    text : text
+                },
+
+                success: (res) => {
+                    fetchComment();
+                },
+                error: (xhr) => {
+                    window.alert('메모 게시 실패' + xhr.status);
+                }
+            }).
+    }
+
+    const fetchComment = (slide_oid) => {
+        $.ajax({
+            method: 'GET',
+            url: `/api/slide/${slide_oid}/comments`,
+
+            success: (res) => {
+                const template = `
+                <div class="comment-item">
+                    <div class="comment-author"></div>
+                    <div class="comment-created"></div>
+                    <div class="comment-text"></div>
+                 </div>
+                ` 
+                let new_comment_cards = res.map(comment => {
+                    let card = $(template);
+                    card.find("comment-item").data = comment._id;
+                    card.find("")
+                })
+                $(".comments_section").
+            }
+        });
+    }
+
+
+        let slides = {{ slides | tojson}};
     {# 
     # slides =[ {
     #     "_id" : string,
@@ -78,39 +115,10 @@
 
         return card;
         })
-    
-    const publishComment = (slide_oid, text) => {
-        $.ajax({
-                method: 'POST',
-                url: `/api/slide/${slide_oid}/comments`,
-                                data: {
-                    text : text
-                },
-
-                success: (res) => {
-                    reloadCommentsCount();
-                    fetchComment()
-                },
-                error: (xhr) => {
-                    window.alert('메모 게시 실패' + xhr.status);
-                }
-            }).
-    }
-
-
-    const fetchComment = (slide_oid) => {
-        $.ajax({
-            method: 'GET',
-            url: `/api/slide/${slide_oid}/comments`,
-        });
-    }
-
-
-
 
 
     $(".slides_section").append(cards);
-
+    
     $(".comments_container").on('click', '.submit-comment', (e) => {
         const slide_oid = $(".comments_container").data('slide-oid');
     });
