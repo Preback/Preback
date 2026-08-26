@@ -250,7 +250,7 @@ def getSlidesByPresentation(presentation_oid: str):
     slides_pipeline = [
         {
             "$match" : {
-                "presentation_oid" : str(presentation_oid)
+                "presentation_oid" : ObjectId(presentation_oid) # 기존: 저장은 ObjectId인데 조회는 문자열, 타입이 다르면 MongoDB는 에러 없이 그냥 안 맞다고 판단
             }
         },
         {
