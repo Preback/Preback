@@ -1,0 +1,1 @@
+# https://YOUR-BUCKET-NAME.s3.ap-northeast-2.amazonaws.com/{pres_id}/slide-01.png // 추후 S3 버킷 연결시 사용, gitignore 처리 필요
