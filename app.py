@@ -1,11 +1,11 @@
 import os
 import uuid
 import pymongo
-from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations
+from db.repository import createPresentation, getCommentsBySlide, getSlidesByPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations
 from datetime import date, datetime, timedelta
 
 from dotenv import load_dotenv
-from flask import Flask, abort, redirect, render_template, request, url_for, session
+from flask import Flask, abort, jsonify, redirect, render_template, request, url_for, session
 from werkzeug.utils import secure_filename
 
 load_dotenv()
@@ -182,38 +182,47 @@ def getAllPresentations():
     presentations = getPresentations(page-1)
     return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
-@app.route('/presentations/<presentation_id>')
-def getPresentation(presentation_id):
-    presentation = find_presentation(presentation_id)
-    if presentation is None:
+@app.route('/presentations/<presentation_id>') #  댓글만 ajax로, 한 프레젠테이션은 새로고침 없는
+def getPresentation(presentation_id): # 
+    try: presentation = getSlidesByPresentation(presentation_id)
+    except: 
         abort(404)
-
-    pid = presentation['id']
-    slide_count = presentation['slide_count']
-    current_slide = min(max(request.args.get('slide', default=1, type=int), 1), slide_count)
-
-    comments = sorted(
-        (c for c in DUMMY_COMMENTS
-         if c['presentation_id'] == pid and c['slide'] == current_slide),
-        key=lambda c: c['created_at'],
-    )
-
-    comment_counts = {}
-    for c in DUMMY_COMMENTS:
-        if c['presentation_id'] == pid:
-            comment_counts[c['slide']] = comment_counts.get(c['slide'], 0) + 1
 
     return render_template(
         'viewer.html',
-        presentation=presentation,
-        slides=range(1, slide_count + 1),
-        current_slide=current_slide,
-        comments=comments,
-        comment_counts=comment_counts,
+        presentation_title = presentation["presentation_title"],
+        presentation_status = presentation["presentation_status"],
+        slides= presentation["slides"]
     )
 
-@app.route('/presentations/<presentation_id>/comments', methods=['POST'])
-def postComment(presentation_id):
+    # slides =[ {
+    #     "_id" : string,
+    #     "presentation_oid" : string,
+    #     "img_src" : string,
+    #     "idx" : int,
+    #     "comments_count" : int
+    # } ]
+
+@app.route('/api/slide/<slide_oid>/comments', methods=['GET'])
+def getComments(slide_oid):
+    comments = getCommentsBySlide(slide_oid) # created-at ascending 순서대로 배열 정렬됨
+    # comments = [
+    #     {
+    #         _id : str 
+    #         reply : str 
+    #         slide_oid : str,
+    #         created_at : iso formatted str, 프론트에서 파싱하기
+    #     }
+    # ]
+
+    return jsonify(
+        comments
+    )
+
+
+
+@app.route('/api/comments/<comment_oid>', methods=['POST'])
+def postComment(coment_oid):
     presentation = find_presentation(presentation_id)
     if presentation is None:
         abort(404)
@@ -230,9 +239,13 @@ def postComment(presentation_id):
             'author': '사용자 이름',
             'body': body,
             'created_at': datetime.now(),
-        })
+        }) 
 
     return redirect(url_for('getPresentation', presentation_id=pid, slide=slide))
+
+@app.route('/api/comments/<comment_oid>', methods=['DELETE'])
+def deleteComment(coment_oid):
+    
 
 if __name__ == '__main__':
    app.run('0.0.0.0', port=5000, debug=True)
