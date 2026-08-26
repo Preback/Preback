@@ -1,7 +1,7 @@
 import os
 import uuid
 import pymongo
-from db.repository import createPresentation, identifyUser, registerUser
+from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts
 from datetime import date, datetime, timedelta
 
 from flask import Flask, abort, redirect, render_template, request, url_for, session
@@ -162,7 +162,12 @@ def getMyPresentations():
 
 @app.route('/presentations/all')
 def getAllPresentations():
-    return render_template('all_presentations.html', presentations=DUMMY_ALL_PRESENTATIONS, active='all')
+    page = request.args.get('page', type=int)
+    if page is None or page < 0:
+        page = 1
+    total_pages = getPresentationPageCounts()
+    presentations = getPresentations(page)
+    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
 @app.route('/presentations/<presentation_id>')
 def getPresentation(presentation_id):
