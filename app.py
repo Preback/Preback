@@ -171,7 +171,7 @@ def getMyPresentations():
     total_pages = getPresentationPageCounts(session.get('user_oid', '').strip())
     user_oid = session['user_oid']
     presentations = getUserPresentations(user_oid, page)
-    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
+    return render_template('mypresen.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
 @app.route('/presentations/all')
 def getAllPresentations():
