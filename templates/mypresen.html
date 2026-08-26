@@ -25,9 +25,11 @@
             <span>새 PPT 업로드</span>
         </a>
 
-        {% for p in presentations %}
-        {{ card.presentation_card(p) }}
-        {% endfor %}
+        <div class="d-flex flex-wrap gap-3">
+            {% for p in presentations %}
+            {{ card.presentation_card(p) }}
+            {% endfor %}
+        </div>
 
         <ul class="pagination">
             <li class="page-item">
