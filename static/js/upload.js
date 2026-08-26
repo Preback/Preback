@@ -14,6 +14,8 @@
 
     function showSelected() {
         const file = fileInput.files[0];
+        const fileSize = file.size;
+        const maxSize = 50 * 1024 * 1024;
 
         if (!file) {
             fileHint.textContent = DEFAULT_HINT;
@@ -26,9 +28,18 @@
         fileHint.classList.remove('text-body-tertiary');
         submitBtn.disabled = false;
 
-        // 제목을 비워뒀으면 파일명(확장자 제외)으로 채워준다.
-        if (titleInput && !titleInput.value) {
+        // 제목을 파일명(확장자 제외)으로 채워준다.
+        if (titleInput) {
             titleInput.value = file.name.replace(/\.[^.]+$/, '');
+        }
+
+        if (fileSize > maxSize) {
+            alert('파일 용량이 50MB를 초과했습니다.');
+            fileInput.value = '';
+            titleInput.value = '';
+            fileHint.textContent = DEFAULT_HINT;
+            fileHint.classList.add('text-body-tertiary')
+            submitBtn.disabled = true;
         }
     }
 
