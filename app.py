@@ -1,14 +1,22 @@
 import os
 import uuid
-from db.repository import createPresentation
+import pymongo
+from db.repository import createPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts
 from datetime import date, datetime, timedelta
 
+from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, request, url_for, session
 from werkzeug.utils import secure_filename
 
+load_dotenv()
+
 app = Flask(__name__)
+# 세션(로그인 유지)에 필수. 없으면 session 사용 시 RuntimeError.
+app.secret_key = os.getenv('SECRET_KEY')
 
 # TODO: config.py로 옮기기
+# 로그인 없이 접근 가능한 엔드포인트. 함수명과 정확히 일치해야 한다.
+PUBLIC_ENDPOINTS = {'getLogin', 'postLogin', 'getSignUp', 'postSignUp', 'static'}
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 ALLOWED_EXTENSIONS = {'.pdf'}
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
@@ -62,6 +70,14 @@ def timeago(value):
         return '%d시간 전' % (seconds // 3600)
     return '%d일 전' % (seconds // 86400)
 
+@app.before_request
+def require_login():
+    if request.endpoint in PUBLIC_ENDPOINTS:
+        return
+    if request.endpoint is None:
+        return
+    if 'user_id' not in session:
+        return redirect(url_for('getLogin'))    # 비로그인시 로그인 페이지로 리다이렉트
 
 @app.route('/')
 def index():
@@ -74,9 +90,9 @@ def getUpload():
 @app.route('/upload', methods=['POST'])
 def postUpload():
     user_oid = session.get('user_oid')
-    title = request.form.get('title', '').strip()
     if not user_oid:
         return redirect(url_for('getLogin'))
+    title = request.form.get('title', '').strip()
     if not title:
         return render_template('upload.html', error='제목을 입력해주세요.'), 400
 
@@ -100,7 +116,6 @@ def postUpload():
         app.logger.exception('presentation insert 실패')
         return render_template('upload.html', error='업로드 중 오류가 발생했습니다. 다시 시도해주세요.'), 500
 
-    # 두 저장소에 걸친 쓰기의 원자성 문제 : createPresentation이 예외를 내면 디스크에 고아 파일이 남고 반대 순서면 DB에 고아 문서가 남는다.(try/except로 처리 가능)
     # TODO: services/converter.py로 슬라이드 이미지 변환 + db/repository.py에 메타데이터 저장
     # TODO: 저장 후 상세 뷰어로 리다이렉트 ("첨부하고 열기")
     return redirect(url_for('getPresentation', presentation_id=presentation_id))
@@ -109,13 +124,47 @@ def postUpload():
 def getLogin():
     return render_template('login.html')
 
+@app.route('/login', methods=['POST'])
+def postLogin():
+    user_id = request.form.get('user_id')
+    user_pw = request.form.get('user_pw')
+    if not identifyUser(user_id, user_pw):
+        return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다.'), 401
+
+    # createPresentation 등이 ObjectId 를 요구하므로 로그인 아이디와 별도로 _id 를 담아둔다.
+    # TODO: identifyUser 가 유저 문서를 반환하도록 바뀌면 이 조회는 제거
+    user = user_collection.find_one({'user_id': user_id})
+    session['user_id'] = user_id
+    session['user_oid'] = str(user['_id'])
+    return redirect(url_for('getMyPresentations'))
+
 @app.route('/signup')
 def getSignUp():
     return render_template('signup.html')
 
+@app.route('/signup', methods=['POST'])
+def postSignUp():
+    user_name = request.form.get('user_name', '').strip()
+    user_id = request.form.get('user_id', '').strip()
+    user_pw = request.form.get('user_pw')
+    user_pw_check = request.form.get('user_pw_check')
+    if not user_name or not user_id or not user_pw or not user_pw_check:
+        return render_template('signup.html', error='입력하지 않은 정보가 있습니다.'), 400
+    if user_pw!=user_pw_check:
+        return render_template('signup.html', error='비밀번호가 일치하지 않습니다.'), 400
+
+    try:
+        registerUser(user_id, user_name, user_pw)
+    except pymongo.errors.DuplicateKeyError:
+        return render_template('signup.html', error='중복된 아이디입니다.'), 409
+    except pymongo.errors.PyMongoError:
+        return render_template('signup.html', error='회원가입에 실패했습니다.'), 500
+    
+    return redirect(url_for('getLogin'))
+
 @app.route('/logout')
 def getLogout():
-    # TODO: 세션 구현 후 session.clear() 추가
+    session.clear()
     return redirect(url_for('getLogin'))
 
 @app.route('/presentations/my')
@@ -124,7 +173,12 @@ def getMyPresentations():
 
 @app.route('/presentations/all')
 def getAllPresentations():
-    return render_template('all_presentations.html', presentations=DUMMY_ALL_PRESENTATIONS, active='all')
+    page = request.args.get('page', type=int)
+    if page is None or page < 0:
+        page = 1
+    total_pages = getPresentationPageCounts()
+    presentations = getPresentations(page)
+    return render_template('all_presentations.html', total_pages= total_pages, page=page, presentations=presentations, active='all')
 
 @app.route('/presentations/<presentation_id>')
 def getPresentation(presentation_id):
