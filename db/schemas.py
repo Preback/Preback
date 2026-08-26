@@ -25,7 +25,7 @@ class PresentationDB(BaseModel):
 
     title: str
     user_oid: ObjectId
-    slides_oid: list[ObjectId] = Field(default_factory=list) # 순서 때문에 배열은 필요
+    slides_oid: list[ObjectId] = Field(default_factory=list) # 순서 때문에 배열은 필요 -> slides에 idx 추가해서 배열 안쓰기로.
     status : PresentationStatus = PresentationStatus.WAITING
     # 파일 경로
     uploaded_path : str
