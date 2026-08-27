@@ -294,9 +294,36 @@ def getSlidesByPresentation(presentation_oid: str):
 
 
 def getCommentsBySlide(slide_oid):
-    comments = comment_collection.find({
-        "slide_oid" : ObjectId(slide_oid)
-    }).sort({"created_at": pymongo.ASCENDING})
+    comments = comment_collection.aggregate([
+        {
+            "$match": {
+                "slide_oid": ObjectId(slide_oid)
+            }
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_oid",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        },
+        {
+            "$set": {
+                "user_name": {
+                    "$arrayElemAt": ["$user.user_name", 0]
+                }
+            }
+        },
+        {
+            "$unset": "user"
+        },
+        {
+            "$sort": {
+                "created_at": pymongo.ASCENDING
+            }
+        }
+    ])
 
     return [{
         **comment,
