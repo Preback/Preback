@@ -26,25 +26,30 @@
 <template id="slide-card-template">
   {% include "partials/slide_card.html" %}
 </template>
-
+<div class="container-fluid">
 {# 모달 템플릿 #}
 
+<div class="row">
 {# 슬라이드 블록#}
-    <div class="slides-section">
+    <div class="slides-section col-9">
+
     </div>
     
 {# 댓글 블록#}
-    <aside class="comments-container">
+    <aside class="comments-container col-3">
 
         <div class="container-name"></div>
-        <div class="comments-section"></div>
+        <div class="comments-section">
+         {# comment 박스들 #}
+        </div>
         <div class="comments-control"></div>
         <div class="comments-input-group row">
-            <textarea class="form-control" placeholder="sth에 댓글 입력하기"></textarea>
+            <textarea class="form-control comment-input" placeholder="sth에 댓글 입력하기"></textarea>
             <button type="button" class="btn btn-primary submit-comment">등록</button>
         </div>
     </aside>
-
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -52,48 +57,6 @@
     
 </script>
 <script>
-
-    const publishComment = (slide_oid, text) => {
-        $.ajax({
-                method: 'POST',
-                url: `/api/slide/${slide_oid}/comments`,
-                                data: {
-                    text : text
-                },
-
-                success: (res) => {
-                    fetchComment();
-                },
-                error: (xhr) => {
-                    window.alert('메모 게시 실패' + xhr.status);
-                }
-            }).
-    }
-
-    const fetchComment = (slide_oid) => {
-        $.ajax({
-            method: 'GET',
-            url: `/api/slide/${slide_oid}/comments`,
-
-            success: (res) => {
-                const template = `
-                <div class="comment-item">
-                    <div class="comment-author"></div>
-                    <div class="comment-created"></div>
-                    <div class="comment-text"></div>
-                 </div>
-                ` 
-                let new_comment_cards = res.map(comment => {
-                    let card = $(template);
-                    card.find("comment-item").data = comment._id;
-                    card.find("")
-                })
-                $(".comments_section").
-            }
-        });
-    }
-
-
         let slides = {{ slides | tojson}};
     {# 
     # slides =[ {
@@ -104,25 +67,100 @@
     #     "comments_count" : int
     # } ]
     #}
+    // 클릭시 댓글 패널 바뀌기
+    // 댓글 fetch하기
+    // 아무것도 클릭 안했을 때 기본 댓글 내용?
+    // 댓글 등록하기 - 재 fetch
+    // low priority : update, delete
+    const publishComment = (slide_oid, text) => {
+        $.ajax({
+                method: 'POST',
+                url: `/api/slide/${slide_oid}/comments`,
+                                data: {
+                    text : text
+                },
+
+                success: (res) => {
+                    $(".comment-input").val("");
+                    fetchComment(slide_oid);
+                },
+                error: (xhr) => {
+                    window.alert('메모 게시 실패' + xhr.status);
+                }
+            });
+    };
+
+    const fetchComment = (slide_oid) => {
+        $.ajax({
+            method: 'GET',
+            url: `/api/slide/${slide_oid}/comments`,
+
+            success: (comments) => {
+                const template = `
+                <div class="comment-item">
+                    <div class="comment-author"></div>
+                    <div class="comment-created"></div>
+                    <div class="comment-text"></div>
+
+                 </div>
+                ` 
+                let new_comment_cards = comments.map(comment => {
+                    const created_date = new Date(comment.created_at);
+
+                    let card = $(template);
+                    card.data("comment-oid", comment._id);
+                    card.find(".comment-author").text(comment.user_name);
+                    card.find(".comment-created").text(`${created_date.getMonth() + 1}월 ${created_date.getDate()}일 작성`);
+                    card.find(".comment-text").text(comment.reply);
+
+                    return card;
+                })
+                $(".comments-section").empty().append(new_comment_cards);
+            },
+            error: (xhr) => {
+                window.alert('댓글 fetch 실패: ' + xhr.status) 
+            }
+        });
+    }
 
 
+
+
+    
     let cards = slides.map(slide => {
         let card = $("#slide-card-template").contents().clone();
         card.find(".img-src").attr("src", slide.img_src);
-        card.data("slide-oid") = slide._id;
+        card.data("slide-oid", slide._id);
         card.find(".slide-idx").text('#'+(slide.idx + 1));
-        card.find(".slide-comments-count").text(`${comments_count} 댓글`);
-
         return card;
         })
 
 
-    $(".slides_section").append(cards);
-    
-    $(".comments_container").on('click', '.submit-comment', (e) => {
-        const slide_oid = $(".comments_container").data('slide-oid');
+    // comment submit하기 
+    $(".comments-container").on('click', '.submit-comment', (e) => {
+        const slide_oid = $(".comments-container").data('slide-oid');
+        const text = $(".comment-input").val().trim();
+        publishComment(slide_oid, text);
+ /// publish 후 fetch 필요 - callback 받아야 => publish에 fetch를 포함함.
     });
     
+
+
+    // 활성화 및 댓글 가져오기 로직
+    $(".slides-section").on('click', '.slide-card', (e) => {
+        let clicked_slide = $(e.currentTarget);
+        const slideOid = clicked_slide.data("slide-oid");
+
+        $(".slide-card.active").removeClass("active");
+        clicked_slide.addClass("active");
+        $(".comments-container").data('slide-oid', slideOid);
+
+        fetchComment(slideOid);
+    })
+
+
+
+    $(".slides-section").append(cards);
 
 </script>
 
