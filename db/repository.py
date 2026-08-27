@@ -341,7 +341,7 @@ def getCommentsBySlide(slide_oid):
 
 def updateComment(comment_oid: str, new_text):
     result = comment_collection.update_one({
-        "_id" : ObjectId(comment_oid),
+        "_id" : ObjectId(comment_oid)}, {
         "$set" : {
             "reply" : new_text
         }
