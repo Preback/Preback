@@ -282,7 +282,13 @@ def getSlidesByPresentation(presentation_oid: str):
         "presentation_title" : presentation["title"],
         "presentation_created_at" : presentation["created_at"],
         "presentation_status" : presentation["status"],
-        "slides" : list(slides)
+        "slides" : [
+            {
+                **slide,
+                "presentation_oid" : str(slide["presentation_oid"]),
+                "_id" : str(slide["_id"])
+            } for slide in slides
+        ]
     }
     return res
 
