@@ -282,7 +282,13 @@ def getSlidesByPresentation(presentation_oid: str):
         "presentation_title" : presentation["title"],
         "presentation_created_at" : presentation["created_at"],
         "presentation_status" : presentation["status"],
-        "slides" : list(slides)
+        "slides" : [
+            {
+                **slide,
+                "presentation_oid" : str(slide["presentation_oid"]),
+                "_id" : str(slide["_id"])
+            } for slide in slides
+        ]
     }
     return res
 
@@ -335,7 +341,7 @@ def getCommentsBySlide(slide_oid):
 
 def updateComment(comment_oid: str, new_text):
     result = comment_collection.update_one({
-        "_id" : ObjectId(comment_oid),
+        "_id" : ObjectId(comment_oid)}, {
         "$set" : {
             "reply" : new_text
         }

@@ -148,7 +148,7 @@
     let cards = slides.map(slide => {
         let card = $("#slide-card-template").contents().clone();
         card.find(".img-src").attr("src", slide.img_src);
-        card.data("slide-oid", slide._id);
+        card.filter(".slide-card").data("slide-oid", slide._id); // contents()에 공백 텍스트노드가 섞여 있어 카드 엘리먼트만 filter
         card.find(".slide-idx").text('#'+(slide.idx + 1));
         return card;
         })

@@ -1,7 +1,9 @@
 import os
 import uuid
 import pymongo
-from db.repository import createComment, createPresentation, getCommentsBySlide, getSlidesByPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations, updateComment
+from db.repository import createComment, createPresentation, getCommentsBySlide, getSlidesByPresentation, identifyUser, registerUser, getPresentations, getPresentationPageCounts, getUserPresentations, updateComment, updateConvertedPresentation, updatePresentationStatus
+from db.schemas import PresentationStatus
+from services.converter import ConversionError, process_pdf
 from datetime import date, datetime, timedelta
 
 from dotenv import load_dotenv
@@ -120,8 +122,19 @@ def postUpload():
         app.logger.exception('presentation insert 실패')
         return render_template('upload.html', error='업로드 중 오류가 발생했습니다. 다시 시도해주세요.'), 500
 
-    # TODO: services/converter.py로 슬라이드 이미지 변환 + db/repository.py에 메타데이터 저장
-    # TODO: 저장 후 상세 뷰어로 리다이렉트 ("첨부하고 열기")
+    try:
+        updatePresentationStatus(presentation_id, PresentationStatus.CONVERTING)
+        slide_urls = process_pdf(save_path, presentation_id)
+        updateConvertedPresentation(presentation_id, slide_urls)
+    except ConversionError as e:
+        updatePresentationStatus(presentation_id, PresentationStatus.FAILED)
+        app.logger.warning('PDF 변환 실패 (presentation_id=%s): %s', presentation_id, e)
+        return render_template('upload.html', error=str(e)), 400
+    except Exception:
+        updatePresentationStatus(presentation_id, PresentationStatus.FAILED)
+        app.logger.exception('슬라이드 저장 실패 (presentation_id=%s)', presentation_id)
+        return render_template('upload.html', error='슬라이드 처리 중 오류가 발생했습니다.'), 500
+
     return redirect(url_for('getPresentation', presentation_id=presentation_id))
 
 @app.route('/login')
