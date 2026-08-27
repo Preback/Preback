@@ -28,13 +28,19 @@
   {% include "partials/slide_card.html" %}
 </template>
 <div class="container-fluid">
-{# 모달 템플릿 #}
-
+{# comment 템플릿 #}
+    <template id="comment-card-template">
+                <div class="comment-item flex-grow-1 overflow-auto">
+                <div class="comment-author" style="font-size:14px;"><a class="text-bg-light text-decoration-none">작성자</a></div>
+                <div class="comment-text" style="font-size:14px;"><a class="text-body-secondary text-decoration-none">내용</a></div>
+                <div class="comment-created text-end border-bottom" style="font-size:10px;"><a>작성일자</a></div>
+            </div>
+    </template>
 <div class="row">
 {# 슬라이드 블록#}
     <div class="slides-section col-9 overflow-auto">
     </div>
-    
+
 {# 댓글 블록#}
     <aside class="comments-container col-3 bg-body-tertiary">
         <div class="app-bar navbar-brand d-flex align-items-center p-2 border-bottom">
@@ -122,7 +128,7 @@
                 let new_comment_cards = comments.map(comment => {
                     const created_date = new Date(comment.created_at);
 
-                    let card = $(template);
+                    let card = $("#comment-card-template").contents().clone();
                     card.data("comment-oid", comment._id);
                     card.find(".comment-author").text(comment.user_name);
                     card.find(".comment-created").text(`${created_date.getMonth() + 1}월 ${created_date.getDate()}일 작성`);
@@ -150,6 +156,7 @@
         return card;
         })
 
+        
 
     // comment submit하기 
     $(".comments-container").on('click', '.submit-comment', (e) => {
@@ -175,8 +182,8 @@
 
 
 
+    
     $(".slides-section").append(cards);
-
 </script>
 
 {% endblock %}
