@@ -7,17 +7,19 @@
   width: 224px;
   aspect-ratio: 16 / 9;
   background-color: #f4f4f4;
-  --bs-border-color: #e5e5e5;
+  --bs-card-border-color: #e5e5e5;
+  cursor: pointer;
+  transition: border-color .12s ease;
 }
 
 .slide-card:hover {
-  --bs-border-color: #b5b5b5;
+  --bs-card-border-color: #b5b5b5;
 }
 
 /* 현재 선택된 슬라이드 */
-.slide-card.is-active {
-  --bs-border-color: #1c1c1c;
-  box-shadow: inset 0 0 0 1px #1c1c1c;
+.slide-card.active {
+  --bs-card-border-width: 5px;
+  --bs-card-border-color: #5cb9f7;
 }
 
 .slide-card__no {
