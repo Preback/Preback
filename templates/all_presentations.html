@@ -11,23 +11,25 @@
 {% block main_class %}d-flex flex-column overflow-auto{% endblock %}
 
 {% block content %}
-<div class="container-fluid mb-3">
-    <div class="row g-3">
-        {% for presentation in presentations %}
-            <div class="col-auto" style="width: 18rem;">
-                {{ render_presentation_card(presentation) }}
-            </div>
-        {% endfor %}
+<div class="m-3">
+    <div class="container-fluid mb-3">
+        <div class="row g-3">
+            {% for presentation in presentations %}
+                <div class="col-auto" style="width: 18rem;">
+                    {{ render_presentation_card(presentation) }}
+                </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
 
-<nav class="mt-auto sticky-bottom bg-body py-2 small" aria-label="page nav showing all pages link">
-    <ul class="pagination">
-        {% for page_idx in range(1, total_pages+1) %}
-        <li class="page-item">
-            <a class="page-link" href="{{url_for('getAllPresentations', page=page_idx)}}"> {{page_idx}} </a>
-        </li>
-        {%endfor%}
-    </ul>
-</nav>
+    <nav class="mt-auto sticky-bottom bg-body py-2 small" aria-label="page nav showing all pages link">
+        <ul class="pagination">
+            {% for page_idx in range(1, total_pages+1) %}
+            <li class="page-item">
+                <a class="page-link" href="{{url_for('getAllPresentations', page=page_idx)}}"> {{page_idx}} </a>
+            </li>
+            {%endfor%}
+        </ul>
+    </nav>
+</div>
 {% endblock %}

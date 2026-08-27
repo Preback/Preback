@@ -12,6 +12,19 @@
   transition: border-color .12s ease;
 }
 
+/* 상세 페이지에서는 한 페이지씩 가로를 채워 세로로 나열한다.
+   댓글 사이드바와 같은 높이를 뷰포트로 쓴다. */
+.slides-section {
+  height: 80vh;
+  padding-inline: 3rem;
+}
+
+.slides-section .slide-card {
+  width: auto;
+  max-width: 80vh;
+  margin-inline: auto;
+}
+
 .slide-card:hover {
   --bs-card-border-color: #b5b5b5;
 }
