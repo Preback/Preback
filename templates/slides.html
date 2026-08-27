@@ -46,11 +46,9 @@
         <div class="app-bar navbar-brand d-flex align-items-center p-2 border-bottom">
             댓글
         </div>
-        <div class="flex-shrink-0 d-flex flex-column border bg-body comments-section" style="height:80vh;">
-            <div class="comment-item flex-grow-1 overflow-auto" >
-                <div class="comment-author" style="font-size:14px;"><a class="text-bg-light text-decoration-none">작성자</a></div>
-                <div class="comment-text" style="font-size:14px;"><a class="text-body-secondary text-decoration-none">내용</a></div>
-                <div class="comment-created text-end border-bottom" style="font-size:10px;"><a>작성일자</a></div>
+        <div class="flex-shrink-0 d-flex flex-column border bg-body" style="height:80vh;">
+            <div class="comments-section flex-grow-1 overflow-auto">
+             {# comment 박스들 - jquery에서 채운다 #}
             </div>
         </div>
         <div class="comments-input-group mt-auto border-top flex-shrink-0 position-relative">
@@ -120,7 +118,13 @@
             url: `/api/slide/${slide_oid}/comments`,
 
             success: (comments) => {
-
+                const template = `
+                <div class="comment-item border-bottom p-2">
+                    <div class="comment-author" style="font-size:14px;"></div>
+                    <div class="comment-text text-body-secondary" style="font-size:14px;"></div>
+                    <div class="comment-created text-end" style="font-size:10px;"></div>
+                 </div>
+                ` 
                 let new_comment_cards = comments.map(comment => {
                     const created_date = new Date(comment.created_at);
 
